@@ -3,7 +3,7 @@ $(document).ready(function () {
         .then(response => response.text())
         .then(actions => {
             const data = jsyaml.load(actions);
-            console.log(data.actions);
+            //console.log(data.actions);
             applyActions(data.actions);
 
         })
@@ -12,25 +12,26 @@ $(document).ready(function () {
 });
 
 function applyActions(actions) {
-    actions.forEach(element => {
-        switch (element.type.toLowerCase().trim()) {
-            case "insert":
-                insertElement(element);
-                break;
-            case "remove":
-                removeElement(element);
-                break;
-            case "replace":
-                replaceElement(element);
-                break;
-            case "alter":
-                alterElement(element);
-                break;
-            default:
-                console.warn(`Action couldn't be find`);
+    const grouped_actions = {
+        remove: [],
+        replace: [],
+        insert: [],
+        alter: []
+    };
+
+    actions.forEach(action => {
+        const type = action.type.toLowerCase().trim();
+        if (grouped_actions[type]) {
+            grouped_actions[type].push(action);
+        } else {
+            console.warn("Unknown action type:", type);
         }
-      
     });
+
+    grouped_actions.remove.forEach(removeElement);
+    grouped_actions.replace.forEach(replaceElement);
+    grouped_actions.insert.forEach(insertElement);
+    grouped_actions.alter.forEach(alterElement);
 }
 
 function insertElement(element) {
