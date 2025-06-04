@@ -1,0 +1,18 @@
+.ad-banner {
+  background: red;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+#new-header {
+  background: #6922c6;
+  color: white;
+  padding: 15px;
+}
+
+footer {
+  background: #eee;
+  text-align: center;
+  padding: 10px;
+  margin-top: 20px;
+}
