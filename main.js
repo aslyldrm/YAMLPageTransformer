@@ -13,12 +13,15 @@ $(document).ready(function () {
 
 function applyActions(actions) {
     actions.forEach(element => {
-        switch (element.type) {
+        switch (element.type.toLowerCase().trim()) {
             case "insert":
                 insertElement(element);
                 break;
+            case "remove":
+                removeElement(element);
+                break;
             default:
-                console.warn(`Action couldn't find`);
+                console.warn(`Action couldn't be find`);
         }
       
     });
@@ -49,4 +52,13 @@ function insertElement(element) {
     }
 
 
+}
+
+function removeElement(element) {
+    const $selector = $(element.selector);
+    if ($selector.length === 0) {
+        console.warn('Element to remove not found:', element.selector);
+        return;
+    }
+    $selector.remove();
 }
