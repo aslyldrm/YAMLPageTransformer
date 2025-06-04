@@ -20,6 +20,9 @@ function applyActions(actions) {
             case "remove":
                 removeElement(element);
                 break;
+            case "replace":
+                replaceElement(element);
+                break;
             default:
                 console.warn(`Action couldn't be find`);
         }
@@ -61,4 +64,18 @@ function removeElement(element) {
         return;
     }
     $selector.remove();
+}
+
+function replaceElement(element) {
+    const $selector = $(element.selector);
+    if ($selector.length === 0) {
+        console.warn('Element to replace not found:', element.selector);
+        return;
+    }
+    const $newElement = $(element.newElement);
+    $selector.replaceWith($newElement);
+    if ($newElement.length === 0) {
+        console.warn('New element to replace with is empty:', element.newElement);
+        return;
+    }
 }
