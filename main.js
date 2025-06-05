@@ -1,15 +1,48 @@
-$(document).ready(function () {
-    fetch("config/actions.yaml")
-        .then(response => response.text())
-        .then(actions => {
-            const data = jsyaml.load(actions);
-            //console.log(data.actions);
-            applyActions(data.actions);
+import { removeElement, insertElement, replaceElement, alterElement } from './js/actions.js';
+import { loadConfig } from './js/yamlLoader.js';
 
-        })
-        .catch(error => console.error(error));
-    
+$(document).ready(async function () {
+    const config = await loadConfig("config/specific_configuration.yaml");
+    gettingTargetPage(config.datasource, "pages");
 });
+
+function gettingTargetPage(datasource, fake) {
+
+    if (datasource[fake]) {
+        const actions = datasource[fake];
+        for (const [key, value] of Object.entries(actions)) {
+            
+            if (Array.isArray(value)) {
+                for (const yamlFile of value) {
+                    loadConfig("config/"+yamlFile)
+                        .then(config => {
+                            if (config && config.actions) {
+                                applyActions(config.actions);
+                            } else {
+                                console.warn("No actions found in YAML:", yamlFile);
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error loading YAML file:", yamlFile, error);
+                        });
+                }
+            } else {
+                loadConfig("config/"+value)
+                    .then(config => {
+                        if (config && config.actions) {
+                            applyActions(config.actions);
+                        } else {
+                            console.warn("No actions found in YAML:", value);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error loading YAML file:", value, error);
+                    });
+            }
+        }
+
+    }
+}
 
 function applyActions(actions) {
     const grouped_actions = {
@@ -34,72 +67,3 @@ function applyActions(actions) {
     grouped_actions.alter.forEach(alterElement);
 }
 
-function insertElement(element) {
-    const $target = $(element.target);
-    if ($target.length === 0) {
-        console.warn('Target element not found:', element.target);
-        return;
-    }
-
-    switch (element.position) {
-        case "before":
-            $target.before(element.element);
-            break;
-        case "after":
-            $target.after(element.element);
-            break;
-        case "prepend":
-            $target.prepend(element.element);
-            break;
-        case "append":
-            $target.append(element.element);
-            break;
-        default:
-            console.warn(`Unknown position: ${element.position}`);
-    }
-
-
-}
-
-function removeElement(element) {
-    const $selector = $(element.selector);
-    if ($selector.length === 0) {
-        console.warn('Element to remove not found:', element.selector);
-        return;
-    }
-    $selector.remove();
-}
-
-function replaceElement(element) {
-    const $selector = $(element.selector);
-    if ($selector.length === 0) {
-        console.warn('Element to replace not found:', element.selector);
-        return;
-    }
-    const $newElement = $(element.newElement);
-    $selector.replaceWith($newElement);
-    if ($newElement.length === 0) {
-        console.warn('New element to replace with is empty:', element.newElement);
-        return;
-    }
-}
-
-function alterElement(element) {
-    const oldText = element.oldValue;
-    const newText = element.newValue;
-
-    if (oldText.length === 0) {
-        console.warn('Element to alter not found');
-        return;
-    }
- 
-    if (newText.length === 0) {
-        console.warn('New value to alter is empty');
-        return;
-    }
-    const html = $("body").html();
-    const newHtml = html.replace(new RegExp(oldText, 'g'), newText);
-    $("body").html(newHtml);
- 
-
-}
